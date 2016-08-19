@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.0.xsd
+http://www.springframework.org/schema/aop
+http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+http://www.springframework.org/schema/tx
+http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+
+	<!-- 配置数据源 --><!-- 加载数据库连接信息db.properties -->
+	<context:property-placeholder location="classpath:/db.properties" />
+
+	<!-- 通过注解注入，配置扫描的包 -->
+	<context:component-scan
+		base-package="com.aim.filmStore.service.impl,com.aim.filmStore.handler,com.aim.filmStore.domain">
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.web.bind.annotation.ControllerAdvice" />
+	</context:component-scan>
+
+
+
+	<!-- 配置C3P0数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driverClass}"></property>
+		<property name="jdbcUrl" value="${jdbc.jdbcUrl}"></property>
+		<property name="user" value="${jdbc.user}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+		<property name="initialPoolSize" value="${jdbc.initialPoolSize}"></property>
+		<property name="maxPoolSize" value="${jdbc.maxPoolSize}"></property>
+	</bean>
+
+	<!-- 配置Mybatis的SqlSessionFactory实例:通过Spring提供的SqlSessionFactoryBean进行配置 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 配置数据源属性 -->
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- 显式指定Mapper文件位置 -->
+		<property name="mapperLocations"
+			value="classpath*:com/aim/filmStore/dao/impl/*DaoImpl.xml" />
+		<!-- 扫描包 -->
+		<property name="typeAliasesPackage" value="com.aim.filmStore.domain"></property>
+		<!-- mybatis配置文件路径 <property name="configLocation" value="classpath:/mybatis/mybatis-conf.xml" 
+			/> -->
+	</bean>
+
+
+	<!-- <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate"> 
+		<constructor-arg index="0" ref="sqlSessionFactory" /> 这个执行器会批量执行更新语句, 还有SIMPLE 
+		和 REUSE <constructor-arg index="1" value="BATCH" /> </bean> -->
+
+
+	<!-- mybatis自动扫描加载sql映射文件/接口:MapperScannerConfigurer basePackage:指定Sql映射文件/接口所在包（自动扫描包） 
+		sqlSessionFactory:引用上面定义的sqlSessionFactory -->
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.aim.filmStore.dao"></property>
+		<!-- <property name="sqlSessionFactory" ref="sqlSessionFactory"></property> -->
+	</bean>
+
+	<!-- 配置Spring的声明式事务 -->
+	<!-- 1.配置事务管理器 -->
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<!-- 使用事务管理 -->
+	<tx:annotation-driven transaction-manager="txManager"></tx:annotation-driven>
+
+	<!-- 配置自动为匹配aspectJ注解的java类生产代理对象 -->
+	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+
+</beans>

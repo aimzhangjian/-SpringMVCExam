@@ -1,0 +1,3 @@
+项目目录下：mvn jetty:run
+数据库配置文件：db.properties
+分页尚未完成
