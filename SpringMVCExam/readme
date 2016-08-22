@@ -1,3 +1,3 @@
-项目目录下：mvn jetty:run
+项目目录下：mvn jetty:run(登陆界面背景图片可能加载不出，eclipse可以加载出)
 数据库配置文件：db.properties
-分页尚未完成
+分页前端尚未完成
